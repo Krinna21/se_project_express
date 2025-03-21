@@ -1,0 +1,22 @@
+{
+  "name": "se_project_express",
+  "version": "0.1.0",
+  "description": "WTWR is a web application that helps users decide what to wear based on weather conditions. Users can add clothing items, view recommendations, and manage their wardrobe. The project includes both a front-end interface and a backend server to handle user authenticatio, data storage, and API Interactions.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Krinna21/se_project_express.git"
+  },
+  "author": "Krinna Patel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Krinna21/se_project_express/issues"
+  },
+  "homepage": "https://github.com/Krinna21/se_project_express#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
