@@ -32,9 +32,8 @@ const getUser = (req, res) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "User not found" });
-      } else {
-        return res.status(500).send({ message: err.message });
       }
+      return res.status(500).send({ message: err.message });
     });
 };
 
