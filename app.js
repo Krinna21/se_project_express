@@ -10,7 +10,19 @@ mongoose
   .then(() => {
     console.log("Connected to DB");
   })
-  .catch(console.error);
+  .catch((err) => {
+    console.error("Failed to connect to DB:", err);
+    app.use((req, res) => {
+      res
+        .status(ERROR_INTERNAL_SERVER)
+        .send({ message: "Failed to connect to the database" });
+    });
+  });
+
+app.use((req, res, next) => {
+  req.user = { _id: "5d8b8592978f8bd833ca8133" };
+  next();
+});
 
 app.use(express.json());
 app.use("/", mainRouter);
