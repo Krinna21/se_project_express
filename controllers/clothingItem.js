@@ -6,13 +6,13 @@ const {
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
-  const { name, weather, imageUrl } = req.body; // Removed unnecessary fields
+  const { name, weather, imageUrl } = req.body;
 
   const newItem = new ClothingItem({
     name,
     weather,
     imageUrl,
-    owner: req.user._id, // Added owner field with user's ID
+    owner: req.user._id,
     likes: [],
   });
 
@@ -26,7 +26,7 @@ const createItem = (req, res) => {
           .send({ message: "Invalid data provided." });
       }
       console.error(err);
-      res
+      return res
         .status(ERROR_INTERNAL_SERVER)
         .send({ message: "An error occurred on the server." });
     });
@@ -34,10 +34,10 @@ const createItem = (req, res) => {
 
 const getItems = (req, res) => {
   ClothingItem.find()
-    .then((items) => res.status(200).send(items)) // Removed unnecessary empty array check
+    .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
-      res
+      return res
         .status(ERROR_INTERNAL_SERVER)
         .send({ message: "An error occurred on the server." });
     });
@@ -51,7 +51,7 @@ const deleteItem = (req, res) => {
       if (!item) {
         return res.status(ERROR_NOT_FOUND).send({ message: "Item not found." });
       }
-      res.status(200).send({ message: "Item deleted successfully." });
+      return res.status(200).send({ message: "Item deleted successfully." });
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -60,7 +60,7 @@ const deleteItem = (req, res) => {
           .send({ message: "Invalid item ID." });
       }
       console.error(err);
-      res
+      return res
         .status(ERROR_INTERNAL_SERVER)
         .send({ message: "An error occurred on the server." });
     });
@@ -78,7 +78,7 @@ const likeItem = (req, res) => {
       if (!item) {
         return res.status(ERROR_NOT_FOUND).send({ message: "Item not found." });
       }
-      res.status(200).send(item);
+      return res.status(200).send(item);
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -87,7 +87,7 @@ const likeItem = (req, res) => {
           .send({ message: "Invalid item ID." });
       }
       console.error(err);
-      res
+      return res
         .status(ERROR_INTERNAL_SERVER)
         .send({ message: "An error occurred on the server." });
     });
@@ -105,7 +105,7 @@ const unlikeItem = (req, res) => {
       if (!item) {
         return res.status(ERROR_NOT_FOUND).send({ message: "Item not found." });
       }
-      res.status(200).send(item);
+      return res.status(200).send(item);
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -114,7 +114,7 @@ const unlikeItem = (req, res) => {
           .send({ message: "Invalid item ID." });
       }
       console.error(err);
-      res
+      return res
         .status(ERROR_INTERNAL_SERVER)
         .send({ message: "An error occurred on the server." });
     });

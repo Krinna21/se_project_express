@@ -11,7 +11,7 @@ const getUsers = (req, res) => {
     .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err);
-      res
+      return res
         .status(ERROR_INTERNAL_SERVER)
         .send({ message: "An error has occurred on the server." });
     });
@@ -26,7 +26,7 @@ const createUser = (req, res) => {
       .send({ message: "Invalid URL format for avatar" });
   }
 
-  User.create({ name, avatar })
+  return User.create({ name, avatar })
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       console.error(err);
