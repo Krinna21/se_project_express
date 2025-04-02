@@ -1,23 +1,30 @@
 const ClothingItem = require("../models/clothingItem");
-const { ERROR_NOT_FOUND, ERROR_INTERNAL_SERVER } = require("../utils/errors");
+const {
+  ERROR_NOT_FOUND,
+  ERROR_INTERNAL_SERVER,
+  ERROR_BAD_REQUEST,
+} = require("../utils/errors");
 
 const createItem = (req, res) => {
-  const { name, description, price, image } = req.body;
+  const { name, weather, imageUrl } = req.body; // Removed unnecessary fields
 
   const newItem = new ClothingItem({
     name,
-    description,
-    price,
-    image,
+    weather,
+    imageUrl,
+    owner: req.user._id, // Added owner field with user's ID
     likes: [],
   });
 
   newItem
     .save()
-    .then((item) => {
-      res.status(201).send(item);
-    })
+    .then((item) => res.status(201).send(item))
     .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res
+          .status(ERROR_BAD_REQUEST)
+          .send({ message: "Invalid data provided." });
+      }
       console.error(err);
       res
         .status(ERROR_INTERNAL_SERVER)
@@ -27,12 +34,7 @@ const createItem = (req, res) => {
 
 const getItems = (req, res) => {
   ClothingItem.find()
-    .then((items) => {
-      if (items.length === 0) {
-        return res.status(ERROR_NOT_FOUND).send({ message: "No items found." });
-      }
-      res.status(200).send(items);
-    })
+    .then((items) => res.status(200).send(items)) // Removed unnecessary empty array check
     .catch((err) => {
       console.error(err);
       res
@@ -52,6 +54,11 @@ const deleteItem = (req, res) => {
       res.status(200).send({ message: "Item deleted successfully." });
     })
     .catch((err) => {
+      if (err.name === "CastError") {
+        return res
+          .status(ERROR_BAD_REQUEST)
+          .send({ message: "Invalid item ID." });
+      }
       console.error(err);
       res
         .status(ERROR_INTERNAL_SERVER)
@@ -74,6 +81,11 @@ const likeItem = (req, res) => {
       res.status(200).send(item);
     })
     .catch((err) => {
+      if (err.name === "CastError") {
+        return res
+          .status(ERROR_BAD_REQUEST)
+          .send({ message: "Invalid item ID." });
+      }
       console.error(err);
       res
         .status(ERROR_INTERNAL_SERVER)
@@ -96,6 +108,11 @@ const unlikeItem = (req, res) => {
       res.status(200).send(item);
     })
     .catch((err) => {
+      if (err.name === "CastError") {
+        return res
+          .status(ERROR_BAD_REQUEST)
+          .send({ message: "Invalid item ID." });
+      }
       console.error(err);
       res
         .status(ERROR_INTERNAL_SERVER)
