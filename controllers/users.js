@@ -1,3 +1,4 @@
+const validator = require("validator");
 const User = require("../models/user");
 const {
   ERROR_BAD_REQUEST,
@@ -20,7 +21,9 @@ const createUser = (req, res) => {
   const { name, avatar } = req.body;
 
   if (!validator.isURL(avatar)) {
-    return res.status(400).send({ message: "Invalid URL format for avatar" });
+    return res
+      .status(ERROR_BAD_REQUEST)
+      .send({ message: "Invalid URL format for avatar" });
   }
 
   User.create({ name, avatar })
@@ -28,10 +31,10 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
+        return res.status(ERROR_BAD_REQUEST).send({ message: err.message });
       }
       return res
-        .status(500)
+        .status(ERROR_INTERNAL_SERVER)
         .send({ message: "An error has occurred on the server." });
     });
 };
