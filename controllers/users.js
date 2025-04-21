@@ -7,6 +7,7 @@ const {
   ERROR_NOT_FOUND,
   ERROR_INTERNAL_SERVER,
   ERROR_UNAUTHORIZED,
+  ERROR_CONFLICT, 
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -34,8 +35,7 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return res.status(409).json({ message: "Email already exists" });
-      }
+        return res.status(ERROR_CONFLICT).json({ message: "Email already exists" }); 
       console.error(err);
       if (err.name === "ValidationError") {
         return res.status(ERROR_BAD_REQUEST).json({ message: err.message });
@@ -43,8 +43,8 @@ const createUser = (req, res) => {
       return res
         .status(ERROR_INTERNAL_SERVER)
         .json({ message: "An error has occurred on the server." });
-    });
-};
+    }});
+  
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -57,18 +57,17 @@ const login = (req, res) => {
           .status(ERROR_UNAUTHORIZED)
           .json({ message: "Invalid credentials" });
       }
-      return bcrypt.compare(password, user.password);
-    })
-    .then((isMatch) => {
-      if (!isMatch) {
-        return res
-          .status(ERROR_UNAUTHORIZED)
-          .json({ message: "Invalid credentials" });
-      }
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
+      return bcrypt.compare(password, user.password).then((isMatch) => { 
+        if (!isMatch) {
+          return res
+            .status(ERROR_UNAUTHORIZED)
+            .json({ message: "Invalid credentials" });
+        }
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        return res.status(200).json({ token });
       });
-      return res.status(200).json({ token });
     })
     .catch((err) => {
       console.error(err);
