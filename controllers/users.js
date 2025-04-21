@@ -7,7 +7,7 @@ const {
   ERROR_NOT_FOUND,
   ERROR_INTERNAL_SERVER,
   ERROR_UNAUTHORIZED,
-  ERROR_CONFLICT, 
+  ERROR_CONFLICT, // ✅ Make sure this is defined as 409 in your `errors.js`
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -28,14 +28,19 @@ const createUser = (req, res) => {
 
   bcrypt
     .hash(password, 10)
-    .then((hashedPassword) => User.create({ name, avatar, email, password: hashedPassword }))
+    .then((hashedPassword) =>
+      User.create({ name, avatar, email, password: hashedPassword })
+    )
     .then((user) => {
       user.password = undefined;
       return res.status(201).json(user);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return res.status(ERROR_CONFLICT).json({ message: "Email already exists" }); 
+        return res
+          .status(ERROR_CONFLICT)
+          .json({ message: "Email already exists" }); // ✅ DONE
+      }
       console.error(err);
       if (err.name === "ValidationError") {
         return res.status(ERROR_BAD_REQUEST).json({ message: err.message });
@@ -43,8 +48,8 @@ const createUser = (req, res) => {
       return res
         .status(ERROR_INTERNAL_SERVER)
         .json({ message: "An error has occurred on the server." });
-    }});
-  
+    });
+};
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -57,7 +62,7 @@ const login = (req, res) => {
           .status(ERROR_UNAUTHORIZED)
           .json({ message: "Invalid credentials" });
       }
-      return bcrypt.compare(password, user.password).then((isMatch) => { 
+      return bcrypt.compare(password, user.password).then((isMatch) => {
         if (!isMatch) {
           return res
             .status(ERROR_UNAUTHORIZED)
