@@ -7,7 +7,7 @@ const {
   ERROR_NOT_FOUND,
   ERROR_INTERNAL_SERVER,
   ERROR_UNAUTHORIZED,
-  ERROR_CONFLICT, // ✅ Make sure this is defined as 409 in your `errors.js`
+  ERROR_CONFLICT,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
@@ -39,7 +39,7 @@ const createUser = (req, res) => {
       if (err.code === 11000) {
         return res
           .status(ERROR_CONFLICT)
-          .json({ message: "Email already exists" }); // ✅ DONE
+          .json({ message: "Email already exists" });
       }
       console.error(err);
       if (err.name === "ValidationError") {
