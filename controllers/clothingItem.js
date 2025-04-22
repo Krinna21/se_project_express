@@ -26,6 +26,7 @@ const createItem = (req, res) => {
           .status(ERROR_BAD_REQUEST)
           .send({ message: "Invalid data provided." });
       }
+      // eslint-disable-next-line no-console
       console.error(err);
       return res
         .status(ERROR_INTERNAL_SERVER)
@@ -37,6 +38,7 @@ const getItems = (req, res) => {
   ClothingItem.find()
     .then((items) => res.status(200).send(items))
     .catch((err) => {
+      // eslint-disable-next-line no-console
       console.error(err);
       return res
         .status(ERROR_INTERNAL_SERVER)
@@ -67,6 +69,7 @@ const deleteItem = (req, res) => {
           .status(ERROR_BAD_REQUEST)
           .send({ message: "Invalid item ID." });
       }
+      // eslint-disable-next-line no-console
       console.error(err);
       return res
         .status(ERROR_INTERNAL_SERVER)
@@ -94,6 +97,7 @@ const likeItem = (req, res) => {
           .status(ERROR_BAD_REQUEST)
           .send({ message: "Invalid item ID." });
       }
+      // eslint-disable-next-line no-console
       console.error(err);
       return res
         .status(ERROR_INTERNAL_SERVER)
@@ -121,6 +125,7 @@ const unlikeItem = (req, res) => {
           .status(ERROR_BAD_REQUEST)
           .send({ message: "Invalid item ID." });
       }
+      // eslint-disable-next-line no-console
       console.error(err);
       return res
         .status(ERROR_INTERNAL_SERVER)

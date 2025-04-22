@@ -26,21 +26,23 @@ const createUser = (req, res) => {
       .json({ message: "Invalid email format" });
   }
 
-  bcrypt
+  return bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
       User.create({ name, avatar, email, password: hashedPassword })
     )
-    .then((user) => {
-      user.password = undefined;
-      return res.status(201).json(user);
-    })
+    .then(({ _id, name: userName, avatar: userAvatar, email: userEmail }) =>
+      res
+        .status(201)
+        .json({ _id, name: userName, avatar: userAvatar, email: userEmail })
+    )
     .catch((err) => {
       if (err.code === 11000) {
         return res
           .status(ERROR_CONFLICT)
           .json({ message: "Email already exists" });
       }
+      // eslint-disable-next-line no-console
       console.error(err);
       if (err.name === "ValidationError") {
         return res.status(ERROR_BAD_REQUEST).json({ message: err.message });
@@ -54,7 +56,7 @@ const createUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
@@ -75,6 +77,7 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
+      // eslint-disable-next-line no-console
       console.error(err);
       return res
         .status(ERROR_INTERNAL_SERVER)
@@ -82,21 +85,19 @@ const login = (req, res) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
-  User.findById(req.user._id)
-    .then((user) => {
-      if (!user) {
-        return res.status(ERROR_NOT_FOUND).json({ message: "User not found" });
-      }
-      return res.status(200).json(user);
-    })
+const getCurrentUser = (req, res) => User.findById(req.user._id)
+    .then((user) =>
+      !user
+        ? res.status(ERROR_NOT_FOUND).json({ message: "User not found" })
+        : res.status(200).json(user)
+    )
     .catch((err) => {
+      // eslint-disable-next-line no-console
       console.error(err);
       return res
         .status(ERROR_INTERNAL_SERVER)
         .json({ message: "An error has occurred on the server." });
     });
-};
 
 const updateCurrentUser = (req, res) => {
   const { name, avatar } = req.body;
@@ -107,7 +108,7 @@ const updateCurrentUser = (req, res) => {
       .json({ message: "Invalid URL format for avatar" });
   }
 
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
     { new: true, runValidators: true }
@@ -119,6 +120,7 @@ const updateCurrentUser = (req, res) => {
       return res.status(200).json(user);
     })
     .catch((err) => {
+      // eslint-disable-next-line no-console
       console.error(err);
       if (err.name === "ValidationError") {
         return res.status(ERROR_BAD_REQUEST).json({ message: err.message });

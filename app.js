@@ -9,9 +9,11 @@ const { PORT = 3001 } = process.env;
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
+    // eslint-disable-next-line no-console
     console.log("Connected to DB");
   })
   .catch((err) => {
+    // eslint-disable-next-line no-console
     console.error("Failed to connect to DB:", err);
     app.use((req, res) => {
       res
@@ -21,9 +23,9 @@ mongoose
   });
 
 app.use(express.json());
-
 app.use("/", mainRouter);
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Listening on port ${PORT}`);
 });
