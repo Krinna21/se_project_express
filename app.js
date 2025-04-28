@@ -1,10 +1,18 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const mainRouter = require("./routes/index");
 const { ERROR_INTERNAL_SERVER } = require("./utils/errors");
 
 const app = express();
 const { PORT = 3001 } = process.env;
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
