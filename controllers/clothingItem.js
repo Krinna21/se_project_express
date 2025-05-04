@@ -92,6 +92,10 @@ const likeItem = (req, res) => {
       return res.status(200).send(item);
     })
     .catch((err) => {
+      console.error(
+        `Error liking item ${itemId} by user ${req.user._id}:`,
+        err
+      );
       if (err.name === "CastError") {
         return res
           .status(ERROR_BAD_REQUEST)
