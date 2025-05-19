@@ -2,28 +2,22 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const {
-  ERROR_BAD_REQUEST,
-  ERROR_NOT_FOUND,
-  ERROR_INTERNAL_SERVER,
-  ERROR_UNAUTHORIZED,
-  ERROR_CONFLICT,
-} = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const createUser = (req, res) => {
+const BadRequestError = require("../errors/BadRequestError");
+const UnauthorizedError = require("../errors/UnauthorizedError");
+const NotFoundError = require("../errors/NotFoundError");
+const ConflictError = require("../errors/ConflictError");
+
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   if (!validator.isURL(avatar)) {
-    return res
-      .status(ERROR_BAD_REQUEST)
-      .json({ message: "Invalid URL format for avatar" });
+    return next(new BadRequestError("Invalid URL format for avatar"));
   }
 
   if (!validator.isEmail(email)) {
-    return res
-      .status(ERROR_BAD_REQUEST)
-      .json({ message: "Invalid email format" });
+    return next(new BadRequestError("Invalid email format"));
   }
 
   return bcrypt
@@ -38,37 +32,27 @@ const createUser = (req, res) => {
     )
     .catch((err) => {
       if (err.code === 11000) {
-        return res
-          .status(ERROR_CONFLICT)
-          .json({ message: "Email already exists" });
+        return next(new ConflictError("Email already exists"));
       }
-      // eslint-disable-next-line no-console
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(ERROR_BAD_REQUEST).json({ message: err.message });
+        return next(new BadRequestError(err.message));
       }
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .json({ message: "An error has occurred on the server." });
+      return next(err);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
-        return res
-          .status(ERROR_UNAUTHORIZED)
-          .json({ message: "Invalid credentials" });
+        throw new UnauthorizedError("Invalid credentials");
       }
       return bcrypt.compare(password, user.password).then((isMatch) => {
         if (!isMatch) {
-          return res
-            .status(ERROR_UNAUTHORIZED)
-            .json({ message: "Invalid credentials" });
+          throw new UnauthorizedError("Invalid credentials");
         }
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
@@ -76,36 +60,30 @@ const login = (req, res) => {
         return res.status(200).json({ token });
       });
     })
+    .catch(next);
+};
+
+const getCurrentUser = (req, res, next) => {
+  return User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError("User not found");
+      }
+      res.status(200).json(user);
+    })
     .catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error(err);
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .json({ message: "An error has occurred on the server." });
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid user ID format"));
+      }
+      return next(err);
     });
 };
 
-const getCurrentUser = (req, res) => User.findById(req.user._id)
-    .then((user) =>
-      !user
-        ? res.status(ERROR_NOT_FOUND).json({ message: "User not found" })
-        : res.status(200).json(user)
-    )
-    .catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error(err);
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .json({ message: "An error has occurred on the server." });
-    });
-
-const updateCurrentUser = (req, res) => {
+const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
 
   if (avatar && !validator.isURL(avatar)) {
-    return res
-      .status(ERROR_BAD_REQUEST)
-      .json({ message: "Invalid URL format for avatar" });
+    return next(new BadRequestError("Invalid URL format for avatar"));
   }
 
   return User.findByIdAndUpdate(
@@ -115,19 +93,15 @@ const updateCurrentUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(ERROR_NOT_FOUND).json({ message: "User not found" });
+        throw new NotFoundError("User not found");
       }
-      return res.status(200).json(user);
+      res.status(200).json(user);
     })
     .catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(ERROR_BAD_REQUEST).json({ message: err.message });
+        return next(new BadRequestError(err.message));
       }
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .json({ message: "An error has occurred on the server." });
+      return next(err);
     });
 };
 

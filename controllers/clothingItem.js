@@ -1,62 +1,45 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  ERROR_NOT_FOUND,
-  ERROR_INTERNAL_SERVER,
-  ERROR_BAD_REQUEST,
-  ERROR_FORBIDDEN,
-} = require("../utils/errors");
 
-const createItem = (req, res) => {
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const ForbiddenError = require("../errors/forbiddenError");
+
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
 
-  const newItem = new ClothingItem({
+  ClothingItem.create({
     name,
     weather,
     imageUrl,
     owner: req.user._id,
     likes: [],
-  });
-
-  newItem
-    .save()
+  })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_BAD_REQUEST)
-          .send({ message: "Invalid data provided." });
+        return next(new BadRequestError("Invalid data provided."));
       }
-      // eslint-disable-next-line no-console
-      console.error(err);
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({ message: "An error occurred on the server." });
+      return next(err);
     });
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find()
     .then((items) => res.status(200).send(items))
-    .catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error(err);
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({ message: "An error occurred on the server." });
-    });
+    .catch(next);
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res.status(ERROR_NOT_FOUND).send({ message: "Item not found." });
+        throw new NotFoundError("Item not found.");
       }
 
       if (item.owner.toString() !== req.user._id.toString()) {
-        return res.status(ERROR_FORBIDDEN).send({ message: "Forbidden" });
+        throw new ForbiddenError("You are not allowed to delete this item.");
       }
 
       return item.deleteOne().then(() => {
@@ -65,19 +48,13 @@ const deleteItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_BAD_REQUEST)
-          .send({ message: "Invalid item ID." });
+        return next(new BadRequestError("Invalid item ID."));
       }
-      // eslint-disable-next-line no-console
-      console.error(err);
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({ message: "An error occurred on the server." });
+      return next(err);
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findByIdAndUpdate(
@@ -87,29 +64,19 @@ const likeItem = (req, res) => {
   )
     .then((item) => {
       if (!item) {
-        return res.status(ERROR_NOT_FOUND).send({ message: "Item not found." });
+        throw new NotFoundError("Item not found.");
       }
-      return res.status(200).send(item);
+      res.status(200).send(item);
     })
     .catch((err) => {
-      console.error(
-        `Error liking item ${itemId} by user ${req.user._id}:`,
-        err
-      );
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_BAD_REQUEST)
-          .send({ message: "Invalid item ID." });
+        return next(new BadRequestError("Invalid item ID."));
       }
-      // eslint-disable-next-line no-console
-      console.error(err);
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({ message: "An error occurred on the server." });
+      return next(err);
     });
 };
 
-const unlikeItem = (req, res) => {
+const unlikeItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findByIdAndUpdate(
@@ -119,21 +86,15 @@ const unlikeItem = (req, res) => {
   )
     .then((item) => {
       if (!item) {
-        return res.status(ERROR_NOT_FOUND).send({ message: "Item not found." });
+        throw new NotFoundError("Item not found.");
       }
-      return res.status(200).send(item);
+      res.status(200).send(item);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_BAD_REQUEST)
-          .send({ message: "Invalid item ID." });
+        return next(new BadRequestError("Invalid item ID."));
       }
-      // eslint-disable-next-line no-console
-      console.error(err);
-      return res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({ message: "An error occurred on the server." });
+      return next(err);
     });
 };
 

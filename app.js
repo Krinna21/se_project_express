@@ -1,8 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 const mainRouter = require("./routes/index");
-const { ERROR_INTERNAL_SERVER } = require("./utils/errors");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -16,24 +17,30 @@ app.use(
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log("Connected to DB");
-  })
+  .then(() => console.log("Connected to DB"))
   .catch((err) => {
-    // eslint-disable-next-line no-console
     console.error("Failed to connect to DB:", err);
-    app.use((req, res) => {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({ message: "Failed to connect to the database" });
-    });
   });
 
 app.use(express.json());
+
+app.use(requestLogger);
+
 app.use("/", mainRouter);
 
+app.use(errorLogger);
+
+app.use(errors());
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  const { statusCode = 500, message } = err;
+
+  res.status(statusCode).send({
+    message: statusCode === 500 ? "An error occurred on the server" : message,
+  });
+});
+
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`Listening on port ${PORT}`);
 });
