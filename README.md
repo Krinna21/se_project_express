@@ -1,4 +1,4 @@
-WTWR (What to Wear?) Back-End
+## WTWR (What to Wear?) Back-End
 
 The back-end of the WTWR (What to Wear?) application serves as the core infrastructure for managing user authentication, clothing items, and their likes. This API-based server allows users to securely sign up, log in, and manage their profiles, as well as add and interact with clothing items.
 
@@ -31,3 +31,12 @@ JWT (JSON Web Tokens): Secure authentication method for protecting routes.
 bcryptjs: Library for hashing user passwords.
 
 validator: Library for validating user input such as email and URL.
+
+## Frontend Repository
+
+You can find the backend code here:  
+👉 [se_project_express](https://github.com/Krinna21/se_project_react.git)
+
+## Domain Name
+
+www.whatowear.jumpingcrab.com
