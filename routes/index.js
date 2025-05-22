@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const { celebrate, Joi } = require("celebrate");
 const { createUser, login } = require("../controllers/users");
-const { NotFoundError } = require("../errors/NotFoundError");
+const NotFoundError = require("../errors/NotFoundError");
 
 const userRouter = require("./users");
 const itemRouter = require("./clothingItem");
