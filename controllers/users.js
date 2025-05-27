@@ -63,8 +63,7 @@ const login = (req, res, next) => {
     .catch(next);
 };
 
-const getCurrentUser = (req, res, next) => {
-  return User.findById(req.user._id)
+const getCurrentUser = (req, res, next) => User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NotFoundError("User not found");
@@ -77,7 +76,6 @@ const getCurrentUser = (req, res, next) => {
       }
       return next(err);
     });
-};
 
 const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
